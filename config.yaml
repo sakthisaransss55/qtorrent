@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qtorrent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qtorrent
+  template:
+    metadata:
+      labels:
+        app: qtorrent
+    spec:
+      containers:
+      - name: qtorrent
+        image: lscr.io/linuxserver/qbittorrent:latest
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: jellyfinmedia
+          mountPath: /downloads
+      volumes:
+      - name: jellyfinmedia
+        persistentVolumeClaim:
+          claimName: jellyfin-media-persistent-volume-claim
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qtorrentservice
+spec:
+  type: ClusterIP
+  selector:
+    app: qtorrent
+  ports:
+  - port: 80
+    targetPort: 8080
+
