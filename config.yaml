@@ -24,10 +24,15 @@ spec:
         volumeMounts:
         - name: jellyfinmedia
           mountPath: /downloads
+        - name: torrentconfig
+          mountPath: /config
       volumes:
       - name: jellyfinmedia
         persistentVolumeClaim:
           claimName: jellyfin-media-persistent-volume-claim
+      - name: torrentconfig
+        persistentVolumeClaim:
+          claimName: torrent-persistent-volume-claim
 
 ---
 apiVersion: v1
@@ -42,3 +47,32 @@ spec:
   - port: 80
     targetPort: 8080
 
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: torrent-persistent-volume
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: torrent-storage-class
+  hostPath:
+    path: /home/sakthi/kubestorage/qtorrent
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: torrent-persistent-volume-claim
+spec:
+  storageClassName: torrent-storage-class
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
